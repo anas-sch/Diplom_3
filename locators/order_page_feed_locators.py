@@ -18,3 +18,8 @@ class OrderPageFeedLocators:
 
     MODAL_CONTAINER = (By.CLASS_NAME, "Modal_modal__container__Wo2l_")
     CLOSE_BUTTON_MODAL = (By.CLASS_NAME, "Modal_modal__close_modified__3V5XS")
+
+    INGREDIENT_ITEM_BY_NAME = (By.XPATH, '//p[text()="{}"]/ancestor::a[@draggable="true"]')
+    INGREDIENT_COUNTER_BY_NAME = (
+        By.XPATH,
+        '//p[text()="{}"]/ancestor::a//p[contains(@class, "counter_counter__num")]')

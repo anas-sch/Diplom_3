@@ -5,13 +5,15 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
+
+from helpers import generate_unique_email
 from page_object.main_page import MainPage
 from page_object.login_page import LoginPage
 from page_object.account_page import AccountPage
 from page_object.forgot_password_page import ForgotPasswordPage
 from page_object.order_page_feed import OrderPageFeed
 from urls import BASE_URL, API_BASE_URL
-from tests.data import TEST_USER_DATA
+from data import TEST_USER_DATA
 
 
 
@@ -77,3 +79,4 @@ def create_user():
         if 'access_token' in locals():
             requests.delete(f"{API_BASE_URL}/auth/user",
                             headers={"Authorization": f"Bearer {access_token}"})
+

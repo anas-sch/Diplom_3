@@ -1,35 +1,18 @@
-from selenium.common import ElementClickInterceptedException
-from selenium.webdriver.support import expected_conditions as EC
+import allure
 from locators.account_page_locators import AccountLocators
 from page_object.base_page import BasePage
 
+@allure.title("Методы для Account Page")
 class AccountPage(BasePage):
 
+    @allure.step("Перейти в личный кабинет")
     def go_to_account(self):
-        account_button = self.wait.until(
-            EC.element_to_be_clickable(AccountLocators.ACCOUNT_BUTTON))
-        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", account_button)
-        try:
-            account_button.click()
-        except ElementClickInterceptedException:
-            self.driver.execute_script("arguments[0].click();", account_button)
+        self.click_with_scroll_to_center(AccountLocators.ACCOUNT_BUTTON)
 
-
+    @allure.step("Перейти в историю заказов")
     def go_to_order_history(self):
-        order_button = self.wait.until(
-            EC.element_to_be_clickable(AccountLocators.ORDER_HISTORY_BUTTON))
-        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", order_button)
-        try:
-            order_button.click()
-        except ElementClickInterceptedException:
-            self.driver.execute_script("arguments[0].click();", order_button)
+        self.click_with_scroll_to_center(AccountLocators.ORDER_HISTORY_BUTTON)
 
-
+    @allure.step("Выйти из аккаунта")
     def logout(self):
-        logout_button = self.wait.until(
-            EC.element_to_be_clickable(AccountLocators.LOGOUT_BUTTON))
-        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", logout_button)
-        try:
-            logout_button.click()
-        except ElementClickInterceptedException:
-            self.driver.execute_script("arguments[0].click();", logout_button)
+        self.click_with_scroll_to_center(AccountLocators.LOGOUT_BUTTON)

@@ -1,6 +1,6 @@
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException
 
 
 class BasePage:
@@ -19,6 +19,17 @@ class BasePage:
         if scroll:
             self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
         element.click()
+
+    def click_with_scroll_to_center(self, locator):
+        element = self.wait.until(EC.element_to_be_clickable(locator))
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block: 'center'});",
+            element
+        )
+        try:
+            element.click()
+        except ElementClickInterceptedException:
+            self.driver.execute_script("arguments[0].click();", element)
 
     def find_element(self, locator):
         return self.wait.until(EC.presence_of_element_located(locator))
@@ -75,14 +86,6 @@ class BasePage:
         self.driver.execute_script(js_script, source, target)
 
 
-
-    def is_element_clickable_wait(self, locator, timeout=10):
-        return self.wait.until(
-            EC.element_to_be_clickable(locator),
-            f"Элемент {locator} не стал кликабельным за {timeout} секунд ожидания"
-        )
-
-
     def close_modal_if_visible(self, modal_locator=None, close_button_locator=None):
         try:
             # Проверяем, видно ли модальное окно
@@ -100,31 +103,3 @@ class BasePage:
 
     def get_current_url(self):
         return self.driver.current_url
-
-    def close_modal(self, container_locator, close_button_locator=None,
-                    overlay_locator=None, timeout=5):
-        try:
-            if not self.is_element_visible(container_locator):
-                return True
-
-            if close_button_locator:
-                self.click_element(close_button_locator)
-            elif overlay_locator:
-                self.click_element(overlay_locator)
-            else:
-                raise ValueError("Должен быть указан close_button_locator или overlay_locator")
-
-            return self.wait_for_element_to_be_invisible(container_locator, timeout)
-
-        except Exception as e:
-            print(f"[WARN] Ошибка закрытия модалки: {str(e)}")
-            return False
-            self.wait_for_element_to_be_invisible(container_locator)
-            return True
-
-        except TimeoutException:
-            print(f"[WARN] Таймаут при закрытии модалки (локатор: {container_locator})")
-            return False
-        except Exception as e:
-            print(f"[WARN] Не удалось закрыть модалку: {str(e)}")
-            return False

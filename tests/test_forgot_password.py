@@ -1,9 +1,7 @@
 import allure
 import pytest
-from tests.helpers import test_email
 
 @allure.suite("Восстановление пароля")
-@pytest.mark.usefixtures("driver")
 class TestForgotPassword:
 
     @allure.title("Открытие страницы восстановления пароля")
@@ -12,8 +10,8 @@ class TestForgotPassword:
         assert "forgot-password" in forgot_password_page.get_current_url()
 
     @allure.title("Ввод email и отправка запроса на восстановление")
-    def test_email_enter_and_send_request_recovery(self, forgot_password_page, test_email):
-        forgot_password_page.enter_email(test_email)
+    def test_email_enter_and_send_request_recovery(self, forgot_password_page):
+        forgot_password_page.enter_email()
 
         forgot_password_page.click_recover_password()
 
@@ -21,10 +19,10 @@ class TestForgotPassword:
         assert "reset-password" in forgot_password_page.get_current_url()
 
     @allure.title("Проверка переключения видимости пароля")
-    def test_toggle_password_visibility(self, forgot_password_page, test_email):
+    def test_toggle_password_visibility(self, forgot_password_page):
 
         forgot_password_page.open_recovery_page()
-        forgot_password_page.enter_email(test_email)
+        forgot_password_page.enter_email()
 
         forgot_password_page.click_recover_password()
         forgot_password_page.wait_for_url("reset-password")
