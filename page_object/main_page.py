@@ -1,17 +1,33 @@
-from selenium.common import TimeoutException
+from selenium.common import TimeoutException, ElementClickInterceptedException
 from selenium.webdriver.common.by import By
 from locators.main_page_locators import MainPageLocators
 from page_object.base_page import BasePage
+from selenium.webdriver.support import expected_conditions as EC
 
 class MainPage(BasePage):
 
     def go_to_constructor(self):
-        self.click_element(MainPageLocators.CONSTRUCTOR_TAB)
+        constructor_button = self.wait.until(
+            EC.element_to_be_clickable(MainPageLocators.CONSTRUCTOR_TAB))
+        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", constructor_button)
+        try:
+            constructor_button.click()
+        except ElementClickInterceptedException:
+            self.driver.execute_script("arguments[0].click();", constructor_button)
+
+
 
     def go_to_order_feed(self):
-        self.click_element(MainPageLocators.ORDER_FEED)
+        feed_button = self.wait.until(
+            EC.element_to_be_clickable(MainPageLocators.ORDER_FEED))
+        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", feed_button)
+        try:
+            feed_button.click()
+        except ElementClickInterceptedException:
+            self.driver.execute_script("arguments[0].click();", feed_button)
 
     def open_ingredient_modal(self, index=0):
+        self.close_main_modal()
         ingredients = self.find_elements(MainPageLocators.INGREDIENT_ITEM)
         ingredients[index].click()
 
@@ -56,28 +72,28 @@ class MainPage(BasePage):
         except TimeoutException:
             return False
 
+
     def make_order(self):
-        self.click_element(MainPageLocators.PLACE_ORDER_BUTTON)
-
-
-    def close_overlay(self):
         try:
-            if self.is_element_visible(MainPageLocators.MODAL_CONTAINER):
-                self.click_element(MainPageLocators.CLOSE_BUTTON_MODAL)
-                self.wait_for_element_to_be_invisible(MainPageLocators.MODAL_CONTAINER)
-        except TimeoutException:
-            print("Модалка не появилась — ничего не закрываем")
+            self.close_main_modal()
 
-    def close_modal(self):
-        try:
-            self.wait_for_order_ready()
+            order_button = self.wait.until(
+                EC.element_to_be_clickable(MainPageLocators.PLACE_ORDER_BUTTON))
 
-            if self.is_element_visible(MainPageLocators.MODAL_CONTAINER):
-                self.click_element(MainPageLocators.CLOSE_BUTTON_MODAL)
-                self.wait_for_element_to_be_invisible(MainPageLocators.MODAL_CONTAINER)
-                print("[DEBUG] Модалка успешно закрыта")
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block: 'center', behavior: 'instant'});",
+                order_button)
+
+            try:
+                order_button.click()
+            except ElementClickInterceptedException:
+                self.driver.execute_script("arguments[0].click();", order_button)
+
         except Exception as e:
-            print(f"[WARN] Ошибка при закрытии модалки: {e}")
+            print(f"Ошибка при оформлении заказа: {e}")
+            raise
+
+
 
 
     def wait_for_order_ready(self):
@@ -92,3 +108,12 @@ class MainPage(BasePage):
             print("[DEBUG] Лоадер исчез — заказ готов")
         except TimeoutException:
             print("[WARN] Лоадер не исчез вовремя — заказ может быть не готов")
+
+
+
+    def close_main_modal(self):
+        self.wait_for_order_ready()
+        return self.close_modal_if_visible(
+            modal_locator=MainPageLocators.MODAL_CONTAINER,
+            close_button_locator=MainPageLocators.CLOSE_BUTTON_MODAL
+        )

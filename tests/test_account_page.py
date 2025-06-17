@@ -8,21 +8,18 @@ class TestAccount:
     def test_go_to_account(self, account_page):
         account_page.go_to_account()
         account_page.wait_for_url("account")
-        assert "account" in account_page.driver.current_url
+        assert "account" in account_page.get_current_url()
 
     @allure.title("Переход в Историю заказов")
     def test_go_to_order_history(self, account_page):
         account_page.go_to_account()
+
         account_page.go_to_order_history()
-        assert "order-history" in account_page.driver.current_url
+        assert "order-history" in account_page.get_current_url()
 
     @allure.title("Выход из аккаунта")
-    def test_logout(self, account_page, main_page):
+    def test_logout(self, account_page):
         account_page.go_to_account()
-
-        main_page.close_modal()
-        main_page.close_overlay()
-
         account_page.logout()
         account_page.wait_for_url("login")
-        assert "login" in account_page.driver.current_url
+        assert "login" in account_page.get_current_url()

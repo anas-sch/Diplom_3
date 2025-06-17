@@ -11,8 +11,5 @@ class MainPageLocators:
     MODAL = (By.CLASS_NAME, "Modal_modal_overlay__x2ZCr")
     CLOSE_BUTTON_MODAL = (By.CLASS_NAME, "Modal_modal__close_modified__3V5XS")
     PLACE_ORDER_BUTTON = (By.XPATH, "//button[text()='Оформить заказ']")
-    OVERLAY = (By.CLASS_NAME, "Modal_modal_overlay__x2ZCr")
-    BUNS_SECTION = (By.XPATH, "//span[contains(text(), 'Булки')]/..")
-    SAUCES_SECTION = (By.XPATH, "//span[contains(text(), 'Соусы')]/..")
-    FILLINGS_SECTION = (By.XPATH, "//span[contains(text(), 'Начинки')]/..")
     ORDER_LOADER = (By.XPATH, "//img[@alt='loading']")
+

@@ -1,7 +1,6 @@
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.by import By
 
 
 class BasePage:
@@ -13,8 +12,9 @@ class BasePage:
     def open_url(self, url):
         self.driver.get(url)
 
-    def click_element(self, locator, scroll=False):
-        self.wait_until_modal_overlay_disappears()
+    def click_element(self, locator, scroll=False, wait_overlay=False, overlay_locator=False):
+        if overlay_locator and wait_overlay:
+            self.wait_until_modal_overlay_disappears(overlay_locator)
         element = self.wait.until(EC.element_to_be_clickable(locator))
         if scroll:
             self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
@@ -44,11 +44,9 @@ class BasePage:
         self.wait.until(EC.url_contains(partial_url))
 
 
-    def wait_until_modal_overlay_disappears(self):
-        overlay_locator = (By.XPATH,
-                    '//*[contains(@class, "Modal_modal__loading")]/following::div[@class="Modal_modal_overlay__x2ZCr"]')
+    def wait_until_modal_overlay_disappears(self, locator):
         try:
-            self.wait.until(EC.invisibility_of_element_located(overlay_locator))
+            self.wait.until(EC.invisibility_of_element_located(locator))
         except TimeoutException:
             print("⚠️ Модальное перекрытие не исчезло вовремя")
 
@@ -84,12 +82,49 @@ class BasePage:
             f"Элемент {locator} не стал кликабельным за {timeout} секунд ожидания"
         )
 
-    def try_close_modal_if_present(self, close_button_locator, modal_locator=None):
+
+    def close_modal_if_visible(self, modal_locator=None, close_button_locator=None):
         try:
-            self.wait_until_modal_overlay_disappears()
-            close_button = self.is_element_clickable_wait(close_button_locator)
-            close_button.click()
-            if modal_locator:
+            # Проверяем, видно ли модальное окно
+            if self.is_element_visible(modal_locator):
+
+                close_button = self.wait_for_element_to_be_visible(close_button_locator)
+                self.driver.execute_script("arguments[0].click();", close_button)
+
+                # Ждем исчезновения модального окна
                 self.wait_for_element_to_be_invisible(modal_locator)
         except Exception as e:
-            print(f"Не удалось закрыть модалку: {e}")
+            print(f"⚠️ Ошибка при закрытии модального окна: {e}")
+
+
+
+    def get_current_url(self):
+        return self.driver.current_url
+
+    def close_modal(self, container_locator, close_button_locator=None,
+                    overlay_locator=None, timeout=5):
+        try:
+            if not self.is_element_visible(container_locator):
+                return True
+
+            if close_button_locator:
+                self.click_element(close_button_locator)
+            elif overlay_locator:
+                self.click_element(overlay_locator)
+            else:
+                raise ValueError("Должен быть указан close_button_locator или overlay_locator")
+
+            return self.wait_for_element_to_be_invisible(container_locator, timeout)
+
+        except Exception as e:
+            print(f"[WARN] Ошибка закрытия модалки: {str(e)}")
+            return False
+            self.wait_for_element_to_be_invisible(container_locator)
+            return True
+
+        except TimeoutException:
+            print(f"[WARN] Таймаут при закрытии модалки (локатор: {container_locator})")
+            return False
+        except Exception as e:
+            print(f"[WARN] Не удалось закрыть модалку: {str(e)}")
+            return False
